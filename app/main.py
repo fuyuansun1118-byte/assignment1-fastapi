@@ -1,6 +1,10 @@
 """Run from the project root: uv run uvicorn app.main:app --port 8000."""
 
 from contextlib import asynccontextmanager
+import os
+from pathlib import Path
+from app.cnn import load_classifier
+from app.image_api import router
 from typing import Annotated
 
 from fastapi import FastAPI, HTTPException, Request
@@ -23,14 +27,16 @@ CORPUS = [
 async def lifespan(app: FastAPI):
     app.state.nlp = load_model()
     app.state.bigram_model = BigramModel(CORPUS)
+    model_path = Path(os.environ.get('CNN_MODEL_PATH', 'models/cifar10_cnn.pt'))
+    app.state.classifier = load_classifier(model_path) if model_path.exists() else None
     yield
     del app.state.nlp
 
 
 app = FastAPI(
-    title="Assignment 1: Text Generation and Word Embeddings",
-    version="1.0.0",
-    description="Module 3 text generation extended with Module 2 spaCy word embeddings.",
+    title="Assignments 1 and 2: Text and Image Classification",
+    version="2.0.0",
+    description="Bigram text generation, spaCy word embeddings and a trained CIFAR-10 CNN classifier.",
     lifespan=lifespan,
 )
 
@@ -61,7 +67,8 @@ def read_root():
 @app.get("/health")
 def health():
     # Requests are served only after the lifespan model load succeeds.
-    return {"status": "ok", "model": "en_core_web_lg"}
+    return {"status": "ok", "model": "en_core_web_lg",
+            "classifier_ready": app.state.classifier is not None}
 
 
 @app.post("/generate")
@@ -77,3 +84,5 @@ def embedding(body: EmbeddingRequest, request: Request):
         return calculate_embedding(request.app.state.nlp, body.word)
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
+
+app.include_router(router)
