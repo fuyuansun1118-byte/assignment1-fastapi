@@ -1,0 +1,105 @@
+{
+  "seed": 42,
+  "device": "cpu",
+  "epochs": 10,
+  "training_examples": 45000,
+  "validation_examples": 5000,
+  "best_epoch": 5,
+  "history": [
+    {
+      "epoch": 1,
+      "training_loss": 1.502264637099372,
+      "validation": {
+        "loss": 1.2667612823486327,
+        "accuracy": 0.5528,
+        "count": 5000
+      }
+    },
+    {
+      "epoch": 2,
+      "training_loss": 1.1673214604059856,
+      "validation": {
+        "loss": 1.1373146666526794,
+        "accuracy": 0.5958,
+        "count": 5000
+      }
+    },
+    {
+      "epoch": 3,
+      "training_loss": 1.0239060320748223,
+      "validation": {
+        "loss": 1.059243888282776,
+        "accuracy": 0.6232,
+        "count": 5000
+      }
+    },
+    {
+      "epoch": 4,
+      "training_loss": 0.9071459815237257,
+      "validation": {
+        "loss": 1.0205557753562928,
+        "accuracy": 0.6382,
+        "count": 5000
+      }
+    },
+    {
+      "epoch": 5,
+      "training_loss": 0.818061234389411,
+      "validation": {
+        "loss": 0.9717419849395752,
+        "accuracy": 0.6568,
+        "count": 5000
+      }
+    },
+    {
+      "epoch": 6,
+      "training_loss": 0.7236902942551506,
+      "validation": {
+        "loss": 1.0028641510009766,
+        "accuracy": 0.6526,
+        "count": 5000
+      }
+    },
+    {
+      "epoch": 7,
+      "training_loss": 0.6396206189155579,
+      "validation": {
+        "loss": 1.0759684827804565,
+        "accuracy": 0.6486,
+        "count": 5000
+      }
+    },
+    {
+      "epoch": 8,
+      "training_loss": 0.5611711565229628,
+      "validation": {
+        "loss": 1.0854718362808227,
+        "accuracy": 0.6498,
+        "count": 5000
+      }
+    },
+    {
+      "epoch": 9,
+      "training_loss": 0.4850245241906908,
+      "validation": {
+        "loss": 1.1218809811592103,
+        "accuracy": 0.651,
+        "count": 5000
+      }
+    },
+    {
+      "epoch": 10,
+      "training_loss": 0.40899532021416557,
+      "validation": {
+        "loss": 1.1414705043792726,
+        "accuracy": 0.6542,
+        "count": 5000
+      }
+    }
+  ],
+  "test": {
+    "loss": 0.9944460801124573,
+    "accuracy": 0.6488,
+    "count": 10000
+  }
+}
