@@ -1,7 +1,7 @@
 # Assignment 2 使用及提交说明
 
 实际训练结果：独立测试集 10,000 张图片准确率 64.88%，全部 19 项测试通过。
-Docker 容器尚未实际验证；代码已上传到原 GitHub 仓库，尚未提交 Canvas。
+Docker 已构建并运行验证通过；代码已上传到原 GitHub 仓库，尚未提交 Canvas。
 
 本项目接着你的 Assignment 1 写，保留 `/generate` 和 `/embedding`，新增 `/classify`。
 

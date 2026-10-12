@@ -24,13 +24,26 @@ The ordinary train.py download remains the torchvision official source.
 - Valid grayscale/RGBA uploads, invalid uploads, size limit and missing checkpoint: passed.
 - Theory PDF: two pages, all six answers present; both pages rendered and visually inspected.
 
-## Docker limitation
+## Docker build and runtime verification
 
-`docker info` could not connect to a running Docker daemon. Launching an
-application named Docker also failed because no application by that name could
-be found. Therefore the supplied Dockerfile has NOT been built or tested in
-this preparation environment. Install/start Docker Desktop and run the README
-commands before claiming a verified container deployment.
+Verified on October 12, 2026 using Docker Desktop on Apple silicon, Docker Engine
+29.8.1, Linux arm64 container architecture. No Dockerfile/code changes were needed.
+
+- Built the GitHub project with `docker build -t assignment2-fastapi:verified .`.
+- Started container `assignment2-validation-20261012`, mapping localhost:8093 to port 80.
+- Docker HEALTHCHECK: **healthy**, container state: **running**.
+- `/health`: HTTP 200 and `classifier_ready: true`.
+- `/docs` and `/openapi.json`: available; `/classify` is documented.
+- `/classify`: actual held-out cat image returned **cat**; ten probabilities sum to one.
+- Grayscale and RGBA uploads: HTTP 200.
+- Invalid/missing images: HTTP 422; upload over 5 MB: HTTP 413.
+- `/generate`: valid text generation response.
+- `/embedding`: 300 finite, nonzero coordinates from the real spaCy model.
+
+Exact image identifier and HTTP results are in `Docker_Verification.json`.
+The previously unavailable daemon was started before this verification. These
+results verify the local Linux arm64 Docker image; other host architectures
+have not been run in this preparation environment.
 
 ## Publication status
 

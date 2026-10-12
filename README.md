@@ -59,8 +59,8 @@ softmax is applied only when returning inference probabilities. CIFAR-10's nativ
 Completed ten epochs. The best validation checkpoint came from epoch 5
 (validation accuracy 65.68%). Its accuracy on the separate official 10,000-image
 test set is **64.88%** (6,488 correct). All 19 tests passed; a real uvicorn HTTP
-classification request also succeeded. Docker was not run because its daemon
-was unavailable.
+classification request also succeeded. The Docker image was built and run successfully on Linux arm64; its healthcheck,
+image classifier and both original Assignment 1 routes passed actual HTTP checks.
 
 ## Reproduce training
 
