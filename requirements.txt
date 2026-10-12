@@ -1,0 +1,9 @@
+fastapi==0.143.0
+uvicorn==0.54.0
+python-multipart==0.0.32
+torch==2.14.1
+torchvision==0.29.1
+Pillow==12.3.0
+numpy==2.5.4
+spacy==3.8.7
+en-core-web-lg @ https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.8.0/en_core_web_lg-3.8.0-py3-none-any.whl
