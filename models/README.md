@@ -1,11 +1,14 @@
-# Course-configured Assignment 2 CNN
+# Completed CNN experiments
 
-Fresh model, instructor tqdm loop, CrossEntropyLoss, Adam 0.0005, batch size 32,
-ten epochs, seed 42, all 50,000 CIFAR-10 training images (15,630 updates).
-Assignment-required CNN: RGB 64 x 64, two convolutions, 100-unit hidden FC.
-Preprocessing: Resize(64,64) then ToTensor, with no extra normalization.
+Both groups completed20 epochs using the same45,000/5,000 stratified split,
+seed42, batch32, CrossEntropyLoss and Adam0.0005.
 
-Fixed final checkpoint: epoch 10. Training accuracy: 76.42%.
-Official separate test accuracy: 65.34% (6,534 / 10,000 images).
-No test-based checkpoint selection. See cifar10_cnn.metrics.json for all epochs
-and cifar10_cnn.training-log.json for the 160 instructor-style log entries.
+| Group | Best validation accuracy | Epoch | Checkpoint | Metrics |
+|---|---:|---:|---|---|
+| Baseline | 65.80% | 9 | baseline.pt | baseline.metrics.json |
+| Data augmentation | 69.38% | 20 | cifar10_cnn.pt | cifar10_cnn.metrics.json |
+
+The API loads cifar10_cnn.pt. Each group has a .training-log.json and complete
+20-epoch history in its metrics file. cifar10_cnn.split.json records their shared
+training/validation indices; its SHA-256 is recorded in both configurations.
+Scores above are validation accuracy, not test accuracy.
