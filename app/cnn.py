@@ -4,9 +4,9 @@ from torch import nn
 from torchvision import transforms
 
 CLASSES = ('airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+PREPROCESSING = 'rgb_resize64_to_tensor_no_normalization'
 TRANSFORM = transforms.Compose([
     transforms.Resize((64, 64)), transforms.ToTensor(),
-    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
 ])
 
 class AssignmentCNN(nn.Module):
@@ -27,6 +27,8 @@ def load_classifier(path):
     checkpoint = torch.load(path, map_location='cpu', weights_only=True)
     if checkpoint['classes'] != list(CLASSES) or checkpoint['image_size'] != 64:
         raise ValueError('Checkpoint class order or image size does not match the API.')
+    if checkpoint.get('preprocessing') != PREPROCESSING:
+        raise ValueError('Checkpoint preprocessing does not match the API. Retrain with train.py.')
     model = AssignmentCNN()
     model.load_state_dict(checkpoint['state_dict'])
     model.eval()
