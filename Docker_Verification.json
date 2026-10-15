@@ -1,9 +1,9 @@
 {
-  "checkpoint_sha256": "f275bca70780a805d351bd11087575c35dcd37568f2df02ce9a559419079e543",
-  "verified_date": "2026-10-14",
-  "container": "assignment2-course-validation-20261014",
-  "image": "assignment2-fastapi:course-config",
-  "image_id": "sha256:99e030473ebe9bd9bcb6778b733ec470f0426a68fbb6ba2c62d954dde8c6539d",
+  "checkpoint_sha256": "c98373b38655881d6af87f74d24811f80d0ac9d455e318e070940e572f93e521",
+  "verified_date": "2026-10-15",
+  "container": "assignment2-submission-20261015",
+  "image": "assignment2-fastapi:submission",
+  "image_id": "sha256:780c65ec9d1ee8ae9e774895be570075ff6812f899d829df56bef30280b766af",
   "architecture": "arm64",
   "os": "linux",
   "docker_server_version": "29.8.1",
@@ -14,20 +14,20 @@
   },
   "docker_health": "healthy",
   "sample_prediction": {
-    "class_id": 3,
-    "class_name": "cat",
-    "confidence": 0.8347721099853516,
+    "class_id": 5,
+    "class_name": "dog",
+    "confidence": 0.5053866505622864,
     "probabilities": {
-      "airplane": 0.000271556549705565,
-      "automobile": 5.164799404155929e-06,
-      "bird": 0.03883067145943642,
-      "cat": 0.8347721099853516,
-      "deer": 0.0015827349852770567,
-      "dog": 0.10249552130699158,
-      "frog": 0.0007436553132720292,
-      "horse": 0.008802440948784351,
-      "ship": 0.012268705293536186,
-      "truck": 0.00022746901959180832
+      "airplane": 0.005587975028902292,
+      "automobile": 0.0014674831181764603,
+      "bird": 0.02056378684937954,
+      "cat": 0.42016956210136414,
+      "deer": 0.0032824126537889242,
+      "dog": 0.5053866505622864,
+      "frog": 0.024598442018032074,
+      "horse": 0.004738799761980772,
+      "ship": 0.013439320027828217,
+      "truck": 0.0007655517547391355
     }
   },
   "checks": [
