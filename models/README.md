@@ -1,10 +1,11 @@
-# Instructor-loop CIFAR-10 CNN
+# Course-configured Assignment 2 CNN
 
-Fresh initialization, instructor-provided tqdm training loop, CrossEntropyLoss,
-Adam learning rate 0.0005, ten epochs, batch size 128, seed 42.
-Exact Assignment 2 CNN architecture and shared 64 x 64 RGB preprocessing.
+Fresh model, instructor tqdm loop, CrossEntropyLoss, Adam 0.0005, batch size 32,
+ten epochs, seed 42, all 50,000 CIFAR-10 training images (15,630 updates).
+Assignment-required CNN: RGB 64 x 64, two convolutions, 100-unit hidden FC.
+Preprocessing: Resize(64,64) then ToTensor, with no extra normalization.
 
-Best validation checkpoint: epoch 10 (64.16%). Independent official
-test accuracy: 64.84% (6,484 / 10,000 images). Final-epoch training
-accuracy: 76.62%. See cifar10_cnn.metrics.json for per-epoch measurements and
-cifar10_cnn.training-log.json for the instructor's datalogs.
+Fixed final checkpoint: epoch 10. Training accuracy: 76.42%.
+Official separate test accuracy: 65.34% (6,534 / 10,000 images).
+No test-based checkpoint selection. See cifar10_cnn.metrics.json for all epochs
+and cifar10_cnn.training-log.json for the 160 instructor-style log entries.
