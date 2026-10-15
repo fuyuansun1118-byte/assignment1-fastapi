@@ -1,9 +1,10 @@
 import io
 from pathlib import Path
 import torch
+import pytest
 from PIL import Image
 from fastapi.testclient import TestClient
-from app.cnn import AssignmentCNN, CLASSES, TRANSFORM
+from app.cnn import AssignmentCNN, CLASSES, TRANSFORM, load_classifier
 from app.main import app
 
 
@@ -31,6 +32,20 @@ def test_training_step_updates_weights():
     optimizer.step()
     assert torch.isfinite(loss)
     assert not torch.equal(original, model.features[0].weight)
+
+
+def test_course_preprocessing_uses_zero_to_one_pixels():
+    black = TRANSFORM(Image.new('RGB', (32, 32), color=(0, 0, 0)))
+    white = TRANSFORM(Image.new('RGB', (32, 32), color=(255, 255, 255)))
+    assert black.shape == white.shape == (3, 64, 64)
+    assert torch.all(black == 0) and torch.all(white == 1)
+
+
+def test_checkpoint_with_old_preprocessing_is_rejected(tmp_path):
+    path = tmp_path / 'old_checkpoint.pt'
+    torch.save({'classes': list(CLASSES), 'image_size': 64, 'state_dict': {}}, path)
+    with pytest.raises(ValueError, match='preprocessing'):
+        load_classifier(path)
 
 
 def test_real_checkpoint_and_uploaded_image():
