@@ -1,7 +1,9 @@
 {
-  "container": "assignment2-validation-20261012",
-  "image": "assignment2-fastapi:verified",
-  "image_id": "sha256:4b4704f24523d4a05dda9e59103307bccc3d7c1ae70fef3358463176c49905d3",
+  "checkpoint_sha256": "72b72c0e287ceb601fceea1e06e937b41818280b79704689351f3d1830534d47",
+  "verified_date": "2026-10-14",
+  "container": "assignment2-teacher-validation-20261014",
+  "image": "assignment2-fastapi:teacher-loop",
+  "image_id": "sha256:1c9e6323620a0678c97cb6bf68ee67d1f3e3a441f478cdc9ddb686698bee126f",
   "architecture": "arm64",
   "os": "linux",
   "docker_server_version": "29.8.1",
@@ -14,29 +16,30 @@
   "sample_prediction": {
     "class_id": 3,
     "class_name": "cat",
-    "confidence": 0.8356610536575317,
+    "confidence": 0.7853826880455017,
     "probabilities": {
-      "airplane": 0.0026072191540151834,
-      "automobile": 0.00035038526402786374,
-      "bird": 0.006144531536847353,
-      "cat": 0.8356610536575317,
-      "deer": 0.0021450163330882788,
-      "dog": 0.14084886014461517,
-      "frog": 0.00567107368260622,
-      "horse": 0.0015763120027258992,
-      "ship": 0.004160406067967415,
-      "truck": 0.0008352315053343773
+      "airplane": 0.00511715654283762,
+      "automobile": 0.00023147805768530816,
+      "bird": 0.007196107879281044,
+      "cat": 0.7853826880455017,
+      "deer": 0.005446862429380417,
+      "dog": 0.1748357117176056,
+      "frog": 0.0024663787335157394,
+      "horse": 0.0011393879540264606,
+      "ship": 0.017710525542497635,
+      "truck": 0.0004737233684863895
     }
   },
   "checks": [
     "Health endpoint: HTTP 200, trained CNN ready",
     "Swagger documentation and image classification route available",
-    "Real CIFAR-10 test image classified as cat, ten probabilities sum to one",
+    "Real CIFAR-10 image inference returns the maximum-probability class; ten probabilities sum to one",
     "Grayscale and RGBA uploads accepted",
     "Invalid/missing images rejected with 422; oversized upload rejected with 413",
     "Assignment 1 text generation retained and functional",
     "Assignment 1 real spaCy 300-dimensional word vectors retained and functional",
-    "Docker HEALTHCHECK reports healthy"
+    "Docker HEALTHCHECK reports healthy",
+    "Checkpoint SHA-256 inside the container matches the newly trained checkpoint"
   ],
   "all_passed": true
 }

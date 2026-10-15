@@ -56,11 +56,20 @@ softmax is applied only when returning inference probabilities. CIFAR-10's nativ
 
 ## Recorded training result
 
-Completed ten epochs. The best validation checkpoint came from epoch 5
-(validation accuracy 65.68%). Its accuracy on the separate official 10,000-image
-test set is **64.88%** (6,488 correct). All 19 tests passed; a real uvicorn HTTP
-classification request also succeeded. The Docker image was built and run successfully on Linux arm64; its healthcheck,
-image classifier and both original Assignment 1 routes passed actual HTTP checks.
+Retrained from a fresh model for ten epochs using the instructor-provided tqdm
+training loop, CrossEntropyLoss and Adam with learning rate 0.0005. The CNN,
+preprocessing, seed 42, batch size 128 and 45,000 / 5,000 split are unchanged.
+Best checkpoint: epoch 10, validation accuracy 64.16%. Independent
+official test accuracy: **64.84%** (6,484 / 10,000 correct). Final-epoch
+training accuracy: 76.62%; training and test accuracy measure different splits.
+All 19 tests pass. The Docker image containing these exact new weights was rebuilt
+and passed health, actual image upload, validation-error and original API checks.
+
+The instructor's notebook-only `widget.src = losschart(datalogs)` is replaced
+with saving the same `datalogs` to `models/cifar10_cnn.training-log.json`.
+The every-100-batch logs and end-of-epoch logs follow the supplied loop. Training
+loss is the mean of per-batch losses, as in that loop. Validation/test loss is a
+sample-weighted mean. Validation selects the checkpoint; test data does not.
 
 ## Reproduce training
 
@@ -71,7 +80,7 @@ python train.py --epochs 10 --device cpu
 ```
 
 Downloads the official CIFAR-10 Python archive. Uses seed 42, a fixed 45,000 / 5,000
-training/validation split, batch size 128, Adam (learning rate 0.001), and ten
+training/validation split, batch size 128, Adam (learning rate 0.0005), and ten
 epochs. Selects the checkpoint with best validation accuracy, then evaluates it
 on the separate 10,000-image official test set. Test images do not influence
 training or checkpoint selection. Recorded measurements are in

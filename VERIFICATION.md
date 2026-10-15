@@ -26,24 +26,20 @@ The ordinary train.py download remains the torchvision official source.
 
 ## Docker build and runtime verification
 
-Verified on October 12, 2026 using Docker Desktop on Apple silicon, Docker Engine
-29.8.1, Linux arm64 container architecture. No Dockerfile/code changes were needed.
+Rebuilt and verified on October 14, 2026 after retraining with the instructor's
+loop. Docker Engine 29.8.1, Linux arm64 image.
+Image tag: `assignment2-fastapi:teacher-loop`. Container: `assignment2-teacher-validation-20261014`. Host port: 8094.
+Docker HEALTHCHECK: **healthy**. Image contents include the exact newly trained
+checkpoint, confirmed by comparing its SHA-256 inside and outside the container.
 
-- Built the GitHub project with `docker build -t assignment2-fastapi:verified .`.
-- Started container `assignment2-validation-20261012`, mapping localhost:8093 to port 80.
-- Docker HEALTHCHECK: **healthy**, container state: **running**.
-- `/health`: HTTP 200 and `classifier_ready: true`.
-- `/docs` and `/openapi.json`: available; `/classify` is documented.
-- `/classify`: actual held-out cat image returned **cat**; ten probabilities sum to one.
-- Grayscale and RGBA uploads: HTTP 200.
-- Invalid/missing images: HTTP 422; upload over 5 MB: HTTP 413.
-- `/generate`: valid text generation response.
-- `/embedding`: 300 finite, nonzero coordinates from the real spaCy model.
+- `/health`: HTTP 200, classifier ready.
+- `/docs` and `/openapi.json`: classification route present.
+- Actual CIFAR-10 image upload: valid class and ten probabilities summing to one.
+- Grayscale/RGBA inputs: HTTP 200; invalid/missing images: 422; oversized file: 413.
+- Original `/generate` and real 300-dimensional `/embedding`: working.
 
-Exact image identifier and HTTP results are in `Docker_Verification.json`.
-The previously unavailable daemon was started before this verification. These
-results verify the local Linux arm64 Docker image; other host architectures
-have not been run in this preparation environment.
+Exact image identifier, checkpoint hash and HTTP result: `Docker_Verification.json`.
+Other host architectures were not tested in this preparation environment.
 
 ## Publication status
 
@@ -54,11 +50,14 @@ and probability solutions are retained. Nothing has been uploaded to Canvas.
 
 ## Final training and runtime result
 
-- Completed all 10 CPU training epochs.
-- Best checkpoint: epoch 5.
-- Best validation accuracy: 65.68% on 5,000 held-out validation images.
-- Official test accuracy: 64.88% (6,488 / 10,000 images); loss 0.9944460801124573.
-- Final complete test suite: **19 passed**, with two dependency deprecation warnings.
-- Started real uvicorn on localhost:8092 and successfully queried /health and POST /classify via HTTP.
-- Saved the sample HTTP response in examples/classification_response.json.
-- Full per-epoch measurements are saved in models/cifar10_cnn.metrics.json.
+- Fresh model, instructor-provided tqdm loop, Adam learning rate 0.0005.
+- Completed all ten CPU training epochs with seed 42 and batch size 128.
+- Best validation checkpoint: epoch 10.
+- Validation accuracy: 64.16% (5,000 held-out training-split images).
+- Official test accuracy: **64.84%** (6,484 / 10,000); loss 1.0390054971694946.
+- Final-epoch training accuracy: 76.62%.
+- Instructor datalogs: 40 entries (every 100 batches plus each epoch end).
+- Full test suite with new checkpoint: **19 passed**.
+- Rebuilt Docker image with the new checkpoint: all HTTP/health checks passed.
+- Saved actual new-model HTTP response in examples/classification_response.json.
+- Per-epoch metrics and training logs are in models/.
