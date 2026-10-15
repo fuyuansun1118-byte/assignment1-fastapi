@@ -32,7 +32,7 @@ certainty. CIFAR-10 training supports only these ten categories: airplane,
 automobile, bird, cat, deer, dog, frog, horse, ship, truck.
 
 Images are decoded, EXIF oriented, converted to RGB, resized to 64 x 64, converted
-to tensors and normalized with mean/std 0.5. Training and API share `TRANSFORM`.
+to tensors with pixel values in [0, 1], without additional normalization. Training and API share `TRANSFORM`.
 Corrupt image uploads return 422, oversized uploads return 413, and missing
 checkpoints return 503 for classification. RGB, grayscale and RGBA inputs work.
 Uploads are limited to 5 MB and 20 million pixels.
@@ -56,20 +56,33 @@ softmax is applied only when returning inference probabilities. CIFAR-10's nativ
 
 ## Recorded training result
 
-Retrained from a fresh model for ten epochs using the instructor-provided tqdm
-training loop, CrossEntropyLoss and Adam with learning rate 0.0005. The CNN,
-preprocessing, seed 42, batch size 128 and 45,000 / 5,000 split are unchanged.
-Best checkpoint: epoch 10, validation accuracy 64.16%. Independent
-official test accuracy: **64.84%** (6,484 / 10,000 correct). Final-epoch
-training accuracy: 76.62%; training and test accuracy measure different splits.
-All 19 tests pass. The Docker image containing these exact new weights was rebuilt
-and passed health, actual image upload, validation-error and original API checks.
+Fresh ten-epoch training with the instructor's tqdm loop, CrossEntropyLoss and
+Adam learning rate 0.0005, batch size 32, seed 42. Uses all 50,000 official
+training images: 1,563 batches per epoch and 15,630 parameter updates in total.
+Final-epoch training accuracy: **76.42%**. The fixed final-epoch checkpoint
+achieves **65.34%** on the official separate 10,000-image test set (6,534
+correct). Test data is evaluated after training and does not select the epoch.
+No validation split or validation-based checkpoint selection is used in this run.
+All 21 tests pass; the rebuilt Docker image containing these exact weights also
+passes actual HTTP inference, upload validation and health checks.
 
-The instructor's notebook-only `widget.src = losschart(datalogs)` is replaced
-with saving the same `datalogs` to `models/cifar10_cnn.training-log.json`.
-The every-100-batch logs and end-of-epoch logs follow the supplied loop. Training
-loss is the mean of per-batch losses, as in that loop. Validation/test loss is a
-sample-weighted mean. Validation selects the checkpoint; test data does not.
+### Classroom alignment and assignment overrides
+
+The course notebook uses batch size 32, all 50,000 training images, ToTensor,
+Adam 0.0005 and ten epochs; those settings and its training loop are followed.
+The assignment PDF specifically requires 64 x 64 RGB, two convolutional layers
+and a 100-unit hidden fully connected layer. These assignment requirements take
+precedence over the classroom notebook's 32 x 32 EnhancedCNN demonstration.
+Consequently the only image transform beyond ToTensor is resizing to 64 x 64.
+No BatchNorm, Dropout or extra convolution layers are added to the required CNN.
+
+Course source: https://mmerler.github.io/applied_genai_notebooks/Module%204/practical_3_cnn/
+
+The notebook-only `widget.src = losschart(datalogs)` is replaced by saving the
+same `datalogs` to `models/cifar10_cnn.training-log.json` (160 records). Training
+loss follows the instructor's mean of per-batch losses. Test loss uses a
+sample-weighted mean. Checkpoints record their preprocessing configuration, and
+the API rejects incompatible checkpoints rather than silently mixing transforms.
 
 ## Reproduce training
 
@@ -79,13 +92,12 @@ python train.py --epochs 10 --device cpu
 # On a CUDA-enabled system: --device cuda
 ```
 
-Downloads the official CIFAR-10 Python archive. Uses seed 42, a fixed 45,000 / 5,000
-training/validation split, batch size 128, Adam (learning rate 0.0005), and ten
-epochs. Selects the checkpoint with best validation accuracy, then evaluates it
-on the separate 10,000-image official test set. Test images do not influence
-training or checkpoint selection. Recorded measurements are in
-`models/cifar10_cnn.metrics.json`. Three held-out images are saved in `examples/`.
-No random placeholder weights are served as a trained model.
+Downloads the official CIFAR-10 Python archive. Defaults: seed 42, batch size 32,
+Adam learning rate 0.0005, ten epochs, and the full 50,000-image training split.
+The final-epoch checkpoint is evaluated on the separate 10,000-image test split.
+The architecture, RGB conversion, resize and tensor conversion are shared with
+the API. Metrics and all training logs are saved in `models/`; three real test
+images are saved in `examples/`.
 
 ## Routes
 
