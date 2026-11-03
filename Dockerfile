@@ -1,9 +1,11 @@
-FROM python:3.13-slim-bookworm
+FROM python:3.12-slim-bookworm
 WORKDIR /code
 ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
 COPY requirements.txt ./
 RUN pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
 COPY app ./app
+COPY helper_lib ./helper_lib
+COPY models/mnist_gan.pt ./models/mnist_gan.pt
 COPY models/cifar10_cnn.pt ./models/cifar10_cnn.pt
 EXPOSE 80
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \

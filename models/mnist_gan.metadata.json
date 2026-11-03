@@ -1,0 +1,13 @@
+{
+  "epoch": 5,
+  "latent_dim": 100,
+  "dataset": "MNIST",
+  "seed": 42,
+  "batch_size": 128,
+  "learning_rate": 0.0002,
+  "betas": [
+    0.5,
+    0.999
+  ],
+  "sha256": "e20c0b590a4b866afad008bcef2ee01e2e2faef4d961c3a9583f7421da139946"
+}
