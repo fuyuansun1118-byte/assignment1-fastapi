@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 import os
 from pathlib import Path
 from app.cnn import load_classifier
+from app.gan_api import router as gan_router, load_generator
 from app.image_api import router
 from typing import Annotated
 
@@ -29,14 +30,16 @@ async def lifespan(app: FastAPI):
     app.state.bigram_model = BigramModel(CORPUS)
     model_path = Path(os.environ.get('CNN_MODEL_PATH', 'models/cifar10_cnn.pt'))
     app.state.classifier = load_classifier(model_path) if model_path.exists() else None
+    gan_path = Path(os.environ.get('GAN_MODEL_PATH', 'models/mnist_gan.pt'))
+    app.state.gan, app.state.gan_epochs = load_generator(gan_path) if gan_path.exists() else (None, 0)
     yield
     del app.state.nlp
 
 
 app = FastAPI(
-    title="Assignments 1 and 2: Text and Image Classification",
-    version="2.0.0",
-    description="Bigram text generation, spaCy word embeddings and a trained CIFAR-10 CNN classifier.",
+    title="Assignments 1-3: Text, Classification and GAN",
+    version="3.0.0",
+    description="Bigram text generation, spaCy word embeddings and a trained CIFAR-10 CNN classifier, and MNIST GAN image generation.",
     lifespan=lifespan,
 )
 
@@ -68,7 +71,8 @@ def read_root():
 def health():
     # Requests are served only after the lifespan model load succeeds.
     return {"status": "ok", "model": "en_core_web_lg",
-            "classifier_ready": app.state.classifier is not None}
+            "classifier_ready": app.state.classifier is not None,
+            "gan_ready": app.state.gan is not None}
 
 
 @app.post("/generate")
@@ -86,3 +90,5 @@ def embedding(body: EmbeddingRequest, request: Request):
         raise HTTPException(status_code=422, detail=str(error)) from error
 
 app.include_router(router)
+
+app.include_router(gan_router)

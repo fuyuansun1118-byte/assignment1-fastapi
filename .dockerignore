@@ -1,10 +1,9 @@
-.venv
 .git
+.venv
+data
 __pycache__
 .pytest_cache
-*.pyc
-.DS_Store
-.env
-tests
+models/*.last.pt
+models/gan_samples
 theory
-*.md
+tests

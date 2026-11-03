@@ -1,0 +1,23 @@
+name: Assignment 3 Docker verification
+on:
+  push:
+    branches: [assignment3-gan]
+  pull_request:
+  workflow_dispatch:
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t assignment3-fastapi .
+      - run: docker run -d --name gan-api -p 8000:80 assignment3-fastapi
+      - run: python3 verify_gan_http.py --runtime docker --output GAN_Docker_Verification.json
+      - if: always()
+        run: docker logs gan-api
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gan-docker-evidence
+          path: |
+            GAN_Docker_Verification.json
+            gan_api_samples.png
