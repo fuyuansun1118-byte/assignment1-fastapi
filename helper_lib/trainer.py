@@ -59,7 +59,9 @@ def train_gan(model, data_loader, criterion=None, optimizer=None, device="cpu",
         history.append(row)
         model.eval()
         torch.save({"generator": model.generator.cpu().state_dict(), "epoch": epoch+1,
-                    "latent_dim": 100, "dataset": "MNIST", "seed": seed}, output)
+                    "latent_dim": 100, "dataset": "MNIST", "seed": seed,
+                    "batch_size": data_loader.batch_size, "learning_rate": lr,
+                    "betas": [0.5, 0.999]}, output)
         model.to(device)
         state = {"model": model.state_dict(), "optimizer_g": opt_g.state_dict(),
                  "optimizer_d": opt_d.state_dict(), "epoch": epoch+1,

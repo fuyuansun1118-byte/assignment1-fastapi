@@ -2,7 +2,6 @@ name: Assignment 3 Docker verification
 on:
   push:
     branches: [assignment3-gan]
-  pull_request:
   workflow_dispatch:
 jobs:
   docker:
