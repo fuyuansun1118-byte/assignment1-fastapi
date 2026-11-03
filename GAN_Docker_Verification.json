@@ -1,0 +1,30 @@
+{
+  "runtime": "docker",
+  "base_url": "http://127.0.0.1:8000",
+  "health": {
+    "status": "ok",
+    "model": "en_core_web_lg",
+    "classifier_ready": true,
+    "gan_ready": true
+  },
+  "gan": {
+    "ready": true,
+    "dataset": "MNIST",
+    "latent_dim": 100,
+    "image_shape": [
+      1,
+      28,
+      28
+    ],
+    "trained_epochs": 5,
+    "conditional": false
+  },
+  "png_size": [
+    122,
+    122
+  ],
+  "png_sha256": "70d77940bf60bfa01b86c5c86eb10e3017d7196b870acef0feff8c90a936bc56",
+  "same_seed_reproducible": true,
+  "workflow_url": "https://github.com/fuyuansun1118-byte/assignment1-fastapi/actions/runs/41570563421",
+  "commit": "5f0fff0d305729d29c58ed1701dde3ce7333fc3f"
+}

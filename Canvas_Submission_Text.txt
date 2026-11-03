@@ -1,0 +1,7 @@
+GitHub: https://github.com/fuyuansun1118-byte/assignment1-fastapi/tree/assignment3-gan
+
+Implemented the specified PyTorch GAN architecture and trained it on all 60,000 MNIST training images for 5 epochs. Training used Adam (learning rate 0.0002, betas 0.5/0.999), batch size 128, and seed 42. The trained generator is integrated into the existing FastAPI application through POST /gan/generate, with portable inference weights included in the Docker image. All 26 local tests passed, and Linux Docker build/startup and real HTTP generation checks passed.
+
+Assignment3_Submission.pdf includes the implementation summary, training results, generated examples, and all seven conceptual/calculation answers with work shown. Code is on the assignment3-gan branch.
+
+Docker verification: https://github.com/fuyuansun1118-byte/assignment1-fastapi/actions/runs/41570563421

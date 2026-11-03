@@ -117,3 +117,26 @@ Course references:
 
 Prepared with OpenAI Codex assistance. Review the code and written derivations
 before submitting, and follow your course's permitted-assistance policy.
+
+## Completed Assignment 3 results
+
+The delivered checkpoint completed **5 epochs** (60,000 images per epoch,
+300,000 total training-image presentations) on CPU with the settings above.
+All **26 tests passed**. `GAN_Verification.json` records real local HTTP checks.
+`GAN_Docker_Verification.json` records the successful Linux Docker checks for
+the final five-epoch model, including the workflow URL and tested code commit.
+Docker build, startup, model readiness, PNG generation and same-seed repetition
+all passed. Linux and macOS PNG hashes can differ due to numerical differences;
+each environment reproduces its own repeated seeded request.
+
+- Docker run: https://github.com/fuyuansun1118-byte/assignment1-fastapi/actions/runs/41570563421
+- Draft PR: https://github.com/fuyuansun1118-byte/assignment1-fastapi/pull/1
+- Canvas-ready report: `Assignment3_Submission.pdf` (implementation, results,
+  generated examples, and all seven theory questions).
+
+The new code is on the **assignment3-gan** branch, not main. To get this version:
+
+```sh
+git clone --branch assignment3-gan https://github.com/fuyuansun1118-byte/assignment1-fastapi.git
+cd assignment1-fastapi
+```
