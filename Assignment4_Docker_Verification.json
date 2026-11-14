@@ -1,0 +1,58 @@
+{
+  "runtime": "docker",
+  "health": {
+    "status": "ok",
+    "model": "en_core_web_lg",
+    "classifier_ready": true,
+    "gan_ready": true,
+    "ebm_ready": true,
+    "diffusion_ready": true
+  },
+  "models": {
+    "ebm": {
+      "kind": "ebm",
+      "ready": true,
+      "dataset": "CIFAR-10",
+      "image_shape": [
+        3,
+        32,
+        32
+      ],
+      "trained_epochs": 3,
+      "conditional": false,
+      "sampler": "Langevin",
+      "png_size": [
+        70,
+        70
+      ],
+      "steps": 500,
+      "png_sha256": "035168a9c440f66093cff0a6d93ea22db6f02d7bc333a71ab432794140157252",
+      "same_seed_reproducible": true,
+      "seconds": 1.536
+    },
+    "diffusion": {
+      "kind": "diffusion",
+      "ready": true,
+      "dataset": "CIFAR-10",
+      "image_shape": [
+        3,
+        32,
+        32
+      ],
+      "trained_epochs": 5,
+      "conditional": false,
+      "sampler": "DDPM ancestral (respaced)",
+      "png_size": [
+        70,
+        70
+      ],
+      "steps": 50,
+      "png_sha256": "5114de5521bc1888277015f54d8d28ce648eac9791d9cfd9e676a1a49b503181",
+      "same_seed_reproducible": true,
+      "seconds": 0.66
+    }
+  },
+  "invalid_request_status": 422,
+  "workflow_url": "https://github.com/fuyuansun1118-byte/assignment1-fastapi/actions/runs/43636846039",
+  "commit": "32dc1dae54c3627a3334a98ada49c420e73f3a8c"
+}

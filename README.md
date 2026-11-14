@@ -194,3 +194,21 @@ fixed-seed generated outputs are included without claiming high semantic quality
 The supplied notebook displays freshly generated images from these exact
 checksum-verified checkpoints. Local and Linux Docker results are stored in
 `Assignment4_Verification.json` and `Assignment4_Docker_Verification.json`.
+
+## Final verification and submission files
+
+All **33 local tests passed** with the delivered model files. Real local HTTP
+and Linux Docker checks verified all readiness flags, valid PNG generation,
+same-seed repetition and HTTP 422 for invalid requests.
+
+- Final Docker run: https://github.com/fuyuansun1118-byte/assignment1-fastapi/actions/runs/43636846039
+- Docker-tested source/model commit: `32dc1dae54c3627a3334a98ada49c420e73f3a8c`.
+- `Assignment4.ipynb` and `Assignment4.html` include all nine answers, executed
+  gradient checks, training history and newly generated checkpoint samples.
+- `Assignment4_Docker_Verification.json` and Docker PNGs are downloaded workflow
+  evidence for the final 3-/5-epoch checkpoints. Local/Linux PNG hashes can differ
+  due to floating-point differences; repeated seeded calls within each runtime
+  were verified separately.
+
+The work stays on its own **assignment4-cifar-generators** branch. No pull request
+is created for Assignment 4, and nothing is merged into Assignment 3 or main.
