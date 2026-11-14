@@ -1,142 +1,183 @@
-# Assignment 3: MNIST GAN Image Generation
+# Assignment 4: CIFAR-10 EBM and Diffusion Generators
 
-Extends the existing Assignments 1-2 FastAPI project with the exact Assignment 3
-GAN architecture, MNIST training, and an image-generation endpoint. Existing
-text generation, word embeddings, and CIFAR-10 classification are retained.
+Adds trained Energy-Based and Diffusion image generators to the existing
+Assignments 1–3 FastAPI application. The original text, embedding, CNN and GAN
+routes are retained. Both new generators operate on native **32×32 RGB CIFAR-10**
+images and are unconditional: a request cannot choose a class label.
 
-## Required architecture
-
-Generator: noise `(B,100)` -> Linear(100,6272) -> reshape `(B,128,7,7)` ->
-ConvTranspose2d(128,64,4,2,1) -> BatchNorm2d(64) -> ReLU ->
-ConvTranspose2d(64,1,4,2,1) -> Tanh -> `(B,1,28,28)`.
-
-Discriminator: `(B,1,28,28)` -> Conv2d(1,64,4,2,1) -> LeakyReLU(0.2) ->
-Conv2d(64,128,4,2,1) -> BatchNorm2d(128) -> LeakyReLU(0.2) ->
-Flatten -> Linear(6272,1) -> Sigmoid (real probability).
-
-Sigmoid pairs with BCELoss. Real and detached generated images train D;
-G then minimizes BCE(D(G(z)),1), with D parameters frozen and BatchNorm kept in training mode for that step. This is the non-saturating generator objective. The GAN
-is unconditional: it samples digits, and does not accept a requested digit label.
-
-## Run the supplied trained model
-
-Python 3.12; run from this directory. The generator checkpoint is included,
-so inference requires neither training nor a runtime MNIST download.
+## Get this version
 
 ```sh
-docker build -t assignment3-fastapi .
-docker run --rm -p 8000:80 assignment3-fastapi
+git clone --branch assignment4-cifar-generators https://github.com/fuyuansun1118-byte/assignment1-fastapi.git
+cd assignment1-fastapi
 ```
 
-Open http://127.0.0.1:8000/docs. POST `/gan/generate` returns a PNG grid:
+The Assignment 4 implementation lives on `assignment4-cifar-generators`, not
+`main`. No cloud inference API or pretrained generative model is used.
+
+## Docker deployment
+
+The inference weights are shipped with the project and copied into the image.
+The server neither downloads CIFAR-10 nor trains during startup.
 
 ```sh
-curl --fail -X POST http://127.0.0.1:8000/gan/generate \
+docker build -t assignment4-fastapi .
+docker run --rm -p 8000:80 assignment4-fastapi
+```
+
+Open http://127.0.0.1:8000/docs, or query the endpoints:
+
+```sh
+curl --fail http://127.0.0.1:8000/ebm/info
+curl --fail http://127.0.0.1:8000/diffusion/info
+curl --fail -X POST http://127.0.0.1:8000/ebm/generate \
   -H 'Content-Type: application/json' \
-  -d '{"num_samples":16,"seed":42}' --output generated_digits.png
-curl --fail http://127.0.0.1:8000/gan/info
-python3 verify_gan_http.py --runtime docker --output GAN_Docker_Verification.json
+  -d '{"num_samples":4,"seed":42,"steps":100}' --output ebm.png
+curl --fail -X POST http://127.0.0.1:8000/diffusion/generate \
+  -H 'Content-Type: application/json' \
+  -d '{"num_samples":4,"seed":42,"steps":50}' --output diffusion.png
+python3 verify_cifar_http.py --runtime docker --output Assignment4_Docker_Verification.json
 ```
 
-Each digit is 28x28; the PNG combines digits with two-pixel padding. Sample
-count is an integer from 1 to 64; seed is an integer from 0 to 2147483647.
-Identical requests reproduce the same PNG in the same runtime. Different
-hardware/library versions can produce small numerical differences.
-Missing GAN weights produce HTTP 503; malformed requests produce HTTP 422.
+The response is an `image/png` grid. Each constituent image is 32×32; two-pixel
+padding surrounds the tiles. `num_samples` is an integer 1–16, and `seed` is an
+integer 0–2147483647. EBM supports 1–200 steps (default 100), and diffusion
+supports 2–200 steps (default 50). Missing weights return 503, invalid inputs 422,
+and an overlapping generation request 429. One new image-generation request
+runs at a time per process to bound CPU demand.
 
-## Train or run locally
+`/health` reports `ebm_ready` and `diffusion_ready`. The environment variables
+`EBM_MODEL_PATH`, `DIFFUSION_MODEL_PATH`, and `TORCH_NUM_THREADS` can override
+paths or CPU threading. Model loading uses `weights_only=True`. Models remain
+in eval mode with frozen parameters during serving, while EBM still enables
+input gradients for Langevin sampling.
+
+## Reproduce training
+
+Python 3.12:
 
 ```sh
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements-dev.txt
-python train_gan.py --epochs 5 --batch-size 128 --lr 0.0002 --seed 42
-uvicorn app.main:app --port 8000
+python train_cifar.py ebm --epochs 5 --data-dir data
+python train_cifar.py diffusion --epochs 8 --data-dir data
 python -m pytest -q
+uvicorn app.main:app --port 8000
 ```
 
-Training uses all 60,000 official MNIST training images, converted to tensors
-and normalized from [0,1] to [-1,1]. No augmentation or test-set tuning is used.
-Noise is standard normal; both optimizers are Adam with learning rate 0.0002
-and betas (0.5,0.999). The default device is CPU; `--device mps` or
-`--device cuda` can be selected if available. `--epochs` is the total target
-number of epochs, including any resumed epochs.
+Both runs use **all 50,000 official training images**, batch size 128, seed 42,
+CPU and pixels mapped from [0,255] to [-1,1]. Labels are not used. No data
+augmentation, held-out model selection or test-set tuning is performed.
+Checkpoints use the final completed epoch, not a selected low-loss preview.
+
+### Energy-Based Model
+
+Adapts the course EBM CNN to three input channels: Conv(3,16,5,2,2),
+Conv(16,32,3,2,1), Conv(32,64,3,2,1), Conv(64,64,3,2,1), flatten,
+Linear(256,64), Linear(64,1). Hidden activations are SiLU/Swish. Output is a
+scalar energy; lower energy is more favorable, with density proportional to
+exp(-E(x)). Total parameters: 77,793.
+
+Training minimizes `mean(E(real)) - mean(E(fake))` plus
+`0.1 * (mean(E(real)^2) + mean(E(fake)^2))`. Adam uses learning rate 0.0001,
+betas (0,0.999), and model-gradient norm clipping at 0.1. A replay buffer of
+4096 initially uniform-noise images supplies negative samples, with a 5%
+fresh-noise refresh probability. Each training negative receives 20 Langevin
+steps: noise std 0.005, step size 10, input-gradient clipping to [-0.03,0.03],
+and image clipping to [-1,1]. Real images receive small noise of std 0.005.
+
+The sampler uses `autograd.grad(E(x).sum(), x)` to obtain **input gradients**;
+it does not call an optimizer or accumulate model parameter gradients. Fake
+images are detached before the parameter-learning step. This sign convention
+lowers energy on real images and raises it on negatives. These are finite-step,
+clipped Langevin dynamics as in the course practical, not exact equilibrium
+samples from a normalized density.
+
+### Diffusion model
+
+A noise-predicting UNet uses residual blocks, GroupNorm, SiLU and projected
+sinusoidal time embeddings. Channel widths are 16,32,64,128. Three stride-2
+convolutions reduce 32×32 to a 4×4 bottleneck; nearest-neighbor upsampling and
+skip concatenation restore 32×32. It has 808,387 parameters. A 64-dimensional,
+pair-interleaved sin/cos time embedding uses max period 10000.
+
+Training samples integer timesteps from a 200-step cosine DDPM schedule and
+forms `x_t = sqrt(alpha_bar_t)*x0 + sqrt(1-alpha_bar_t)*epsilon`.
+The target is sampled standard-normal epsilon, with mean squared error loss.
+Adam uses learning rate 0.0002; model-gradient norm clipping is 1.0. A
+parameter EMA (decay 0.995) is saved for inference. GroupNorm has no running
+mean/variance buffers to update. The sampler is deterministic **DDIM with
+eta=0**, normally using 50 evenly spaced indices from the trained 200-step
+schedule. Predicted x0 is clipped to [-1,1], and noise is recomputed after
+clipping for a consistent next-step update.
+
+This retains the course principles of time-conditioned noise prediction and
+reverse diffusion. It uses an explicit discrete cosine schedule and DDIM
+parameterization rather than copying the course continuous-noise-variance
+implementation verbatim. The assignment does not prescribe a fixed model
+architecture. This design is documented so the time-embedding convention and
+sampling equations are unambiguous.
+
+### Checkpoints and continuation
+
+`models/cifar10_ebm.pt` and `models/cifar10_diffusion.pt` hold portable CPU
+inference weights, actual epoch and configuration. Metadata files record SHA-256
+checksums. Per-epoch logs and fixed-seed previews are stored beside the weights.
+The gitignored `.last.pt` files contain model/optimizer/RNG state plus replay
+buffer or EMA and are only needed for local continuation:
 
 ```sh
-python train_gan.py --epochs 20 --resume models/mnist_gan.last.pt
+python train_cifar.py ebm --epochs 10 --resume models/cifar10_ebm.last.pt
+python train_cifar.py diffusion --epochs 16 --resume models/cifar10_diffusion.last.pt
 ```
 
-`models/mnist_gan.pt` contains portable CPU inference weights and metadata.
-The gitignored `.last.pt` contains the complete GAN, optimizers and RNG states
-for local continuation; MPS RNG state is included when training on MPS.
-Per-epoch losses/times are recorded in `models/mnist_gan.training-log.json`;
-fixed-seed grids are saved under `models/gan_samples/`. The final completed
-checkpoint is served; GAN losses are not accuracy scores or reliable image
-quality metrics. Inspect the grids for quality and diversity. Small MNIST GANs
-can still generate distorted or ambiguous digits and can suffer mode collapse.
+`--epochs` is the total target, including completed epochs. Inference checkpoint
+writes are atomic. Downloaded data, virtual environments and continuation files
+are excluded from the submission ZIP and GitHub.
 
-## Project organization
+## Results and limits
 
-- `helper_lib/model.py`: Generator, Discriminator, GAN and get_model factory.
-- `helper_lib/data_loader.py`: MNIST loading and normalization.
-- `helper_lib/trainer.py`: alternating GAN updates, checkpoints and logs.
-- `helper_lib/generator.py`: latent sampling and PNG serialization.
-- `train_gan.py`: seeded command-line training.
-- `app/gan_api.py`: trained checkpoint loading and generation routes.
-- `tests/test_gan.py`: gradients, shapes, training, checkpoint/resume, seeds,
-  valid PNG output, request validation and missing-weight errors.
-- `theory/Assignment3_Theory.pdf`: all seven answers and calculations.
-- `.github/workflows/gan-docker.yml`: Linux Docker build and real HTTP smoke test.
+Actual completed epoch counts, losses and preview images are supplied in the
+training logs and notebook. Contrastive energy losses and noise MSE are training
+diagnostics, not image-quality scores or class accuracy. These compact CPU-trained
+models can produce textures, colors and ambiguous shapes rather than clearly
+recognizable CIFAR-10 objects. No FID, likelihood or semantic-quality threshold
+is claimed. A functioning endpoint and successful Docker build do not establish
+high perceptual quality.
 
-## Existing routes
+## Tests and verification
 
-GET `/health`, GET `/image/classes`, POST `/classify`, POST `/generate` and
-POST `/embedding` are preserved. GAN uses `/gan/generate` so it does not
-conflict with text generation. `/health` reports `gan_ready` as well as
-classifier readiness. `GAN_MODEL_PATH` optionally overrides the checkpoint path.
-The original spaCy embedding model is installed during Docker build.
-See `README_Assignment2.md` for the earlier CNN experiments. The old
-`Docker_Verification.json` describes Assignment 2 only, not the new GAN.
+`tests/test_cifar_generation.py` covers input-energy descent without weight or
+parameter-gradient changes, sinusoidal values, forward-noise coefficients,
+UNet shape/gradients, checkpoint training/resume, seeded PNG generation, request
+validation and unavailable checkpoints. The prior assignments' tests remain.
 
-## Verification and submission
+The verification script calls a live HTTP server, checks all model readiness
+flags, decodes PNG dimensions, checks same-seed repetition and invalid inputs,
+and records actual generation timings. GitHub Actions builds and runs the
+Docker image on Linux and uploads its JSON/PNG evidence. Only a successful
+workflow execution counts as Docker verification.
 
-Local test and HTTP evidence for the final model are recorded separately from
-Docker evidence. A Docker workflow run is successful only when its build and
-HTTP smoke test actually pass; merely providing a Dockerfile is not proof.
+## Written work and notebook
 
-Commit the new code and trained generator to GitHub. For Canvas, include the
-theory PDF and a short implementation/results write-up with the GitHub link.
-A project ZIP can also be attached if desired; the rubric does not prescribe
-an exact archive format. Do not submit downloaded MNIST data, the virtual
-environment or local continuation checkpoints.
+`Assignment4.ipynb` contains runnable model/training definitions, recorded full
+training results, fresh checkpoint inference and all nine questions. Its HTML
+export embeds the results and images for reading. Training is opt-in; normal
+Run All loads the supplied weights and performs inference instead of retraining.
+`theory/Assignment4_Theory.md` contains the written answers separately.
 
-Course references:
-- https://mmerler.github.io/applied_genai_notebooks/Module%206/practical_1_gan/
-- https://mmerler.github.io/applied_genai_notebooks/Module%206/gan_code/
-- https://mmerler.github.io/applied_genai_notebooks/Module%204/nn_code/
+Prepared with OpenAI Codex assistance. Review the derivations and implementation
+before submitting. Include the Assignment 4 branch URL with the files so the
+instructor can obtain Docker/API code and weights.
 
-Prepared with OpenAI Codex assistance. Review the code and written derivations
-before submitting, and follow your course's permitted-assistance policy.
+## References
 
-## Completed Assignment 3 results
-
-The delivered checkpoint completed **5 epochs** (60,000 images per epoch,
-300,000 total training-image presentations) on CPU with the settings above.
-All **26 tests passed**. `GAN_Verification.json` records real local HTTP checks.
-`GAN_Docker_Verification.json` records the successful Linux Docker checks for
-the final five-epoch model, including the workflow URL and tested code commit.
-Docker build, startup, model readiness, PNG generation and same-seed repetition
-all passed. Linux and macOS PNG hashes can differ due to numerical differences;
-each environment reproduces its own repeated seeded request.
-
-- Docker run: https://github.com/fuyuansun1118-byte/assignment1-fastapi/actions/runs/41570563421
-- Draft PR: https://github.com/fuyuansun1118-byte/assignment1-fastapi/pull/1
-- Canvas-ready report: `Assignment3_Submission.pdf` (implementation, results,
-  generated examples, and all seven theory questions).
-
-The new code is on the **assignment3-gan** branch, not main. To get this version:
-
-```sh
-git clone --branch assignment3-gan https://github.com/fuyuansun1118-byte/assignment1-fastapi.git
-cd assignment1-fastapi
-```
+- Course EBM: https://mmerler.github.io/applied_genai_notebooks/Module%208/practical_1_energy_based/
+- Course diffusion: https://mmerler.github.io/applied_genai_notebooks/Module%208/practical_2_diffusion/
+- Class activity: https://mmerler.github.io/applied_genai_notebooks/Module%208/diffusion_code/
+- DDPM: https://arxiv.org/abs/2006.11239
+- DDIM: https://arxiv.org/abs/2010.02502
+- Cosine schedule / Improved DDPM: https://arxiv.org/abs/2102.09672
+- PyTorch tensor: https://docs.pytorch.org/docs/2.15/generated/torch.tensor.html
+- PyTorch detach: https://docs.pytorch.org/docs/2.15/generated/torch.Tensor.detach.html

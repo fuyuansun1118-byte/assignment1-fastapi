@@ -5,6 +5,8 @@ import os
 from pathlib import Path
 from app.cnn import load_classifier
 from app.gan_api import router as gan_router, load_generator
+from app.cifar_generation_api import router as cifar_router, load_cifar_generator
+import torch
 from app.image_api import router
 from typing import Annotated
 
@@ -26,20 +28,24 @@ CORPUS = [
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    torch.set_num_threads(int(os.environ.get("TORCH_NUM_THREADS", "4")))
     app.state.nlp = load_model()
     app.state.bigram_model = BigramModel(CORPUS)
     model_path = Path(os.environ.get('CNN_MODEL_PATH', 'models/cifar10_cnn.pt'))
     app.state.classifier = load_classifier(model_path) if model_path.exists() else None
     gan_path = Path(os.environ.get('GAN_MODEL_PATH', 'models/mnist_gan.pt'))
     app.state.gan, app.state.gan_epochs = load_generator(gan_path) if gan_path.exists() else (None, 0)
+    for kind in ['ebm','diffusion']:
+        path = Path(os.environ.get(f'{kind.upper()}_MODEL_PATH', f'models/cifar10_{kind}.pt'))
+        setattr(app.state, kind, load_cifar_generator(path, kind) if path.exists() else None)
     yield
     del app.state.nlp
 
 
 app = FastAPI(
-    title="Assignments 1-3: Text, Classification and GAN",
-    version="3.0.0",
-    description="Bigram text generation, spaCy word embeddings and a trained CIFAR-10 CNN classifier, and MNIST GAN image generation.",
+    title="Assignments 1-4: Text and Image Models",
+    version="4.0.0",
+    description="Bigram text generation, spaCy word embeddings and a trained CIFAR-10 CNN classifier, MNIST GAN, CIFAR-10 EBM and diffusion image generation.",
     lifespan=lifespan,
 )
 
@@ -72,7 +78,9 @@ def health():
     # Requests are served only after the lifespan model load succeeds.
     return {"status": "ok", "model": "en_core_web_lg",
             "classifier_ready": app.state.classifier is not None,
-            "gan_ready": app.state.gan is not None}
+            "gan_ready": app.state.gan is not None,
+            "ebm_ready": app.state.ebm is not None,
+            "diffusion_ready": app.state.diffusion is not None}
 
 
 @app.post("/generate")
@@ -92,3 +100,5 @@ def embedding(body: EmbeddingRequest, request: Request):
 app.include_router(router)
 
 app.include_router(gan_router)
+
+app.include_router(cifar_router)

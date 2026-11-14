@@ -1,0 +1,27 @@
+{
+  "Q6a_x_grad": [
+    7.0
+  ],
+  "Q6b_error": "element 0 of tensors does not require grad and does not have a grad_fn",
+  "Q6c_default_requires_grad": false,
+  "Q7a": {
+    "x_grad": [
+      7.0
+    ],
+    "w_grad": null
+  },
+  "Q7b_w_grad": [
+    4.0,
+    2.0
+  ],
+  "Q7c_default_requires_grad": false,
+  "Q8_original_error": "element 0 of tensors does not require grad and does not have a grad_fn",
+  "Q8_fixed_x_grad": [
+    6.0
+  ],
+  "Q9": {
+    "first": 2.0,
+    "accumulated_second": 5.0,
+    "after_reset": 3.0
+  }
+}

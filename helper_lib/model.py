@@ -32,7 +32,14 @@ class GAN(nn.Module):
         self.generator = Generator()
         self.discriminator = Discriminator()
 
-def get_model(model_name="GAN"):
-    if model_name.upper() != "GAN":
-        raise ValueError("This module implements GAN; existing CNN is in app.cnn.")
-    return GAN()
+def get_model(model_name="GAN", **kwargs):
+    name = model_name.upper()
+    if name == "GAN":
+        return GAN()
+    if name in {"EBM", "ENERGY"}:
+        from .energy import EnergyModel
+        return EnergyModel(**kwargs)
+    if name == "DIFFUSION":
+        from .diffusion import NoiseUNet
+        return NoiseUNet(**kwargs)
+    raise ValueError("Choose GAN, EBM/Energy or Diffusion; existing CNN is in app.cnn.")

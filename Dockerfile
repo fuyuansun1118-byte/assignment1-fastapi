@@ -6,6 +6,8 @@ RUN pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requir
 COPY app ./app
 COPY helper_lib ./helper_lib
 COPY models/mnist_gan.pt ./models/mnist_gan.pt
+COPY models/cifar10_ebm.pt ./models/cifar10_ebm.pt
+COPY models/cifar10_diffusion.pt ./models/cifar10_diffusion.pt
 COPY models/cifar10_cnn.pt ./models/cifar10_cnn.pt
 EXPOSE 80
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \

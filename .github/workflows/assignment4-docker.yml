@@ -1,0 +1,23 @@
+name: Assignment 4 Docker verification
+on:
+  push:
+    branches: [assignment4-cifar-generators]
+  workflow_dispatch:
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t assignment4-fastapi .
+      - run: docker run -d --name cifar-api -p 8000:80 assignment4-fastapi
+      - run: python3 verify_cifar_http.py --runtime docker --output Assignment4_Docker_Verification.json
+      - if: always()
+        run: docker logs cifar-api
+      - uses: actions/upload-artifact@v4
+        with:
+          name: assignment4-docker-evidence
+          path: |
+            Assignment4_Docker_Verification.json
+            ebm_docker_samples.png
+            diffusion_docker_samples.png

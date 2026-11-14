@@ -7,3 +7,8 @@ models/*.last.pt
 models/gan_samples
 theory
 tests
+
+models/ebm_samples
+models/diffusion_samples
+*.ipynb
+*.html
