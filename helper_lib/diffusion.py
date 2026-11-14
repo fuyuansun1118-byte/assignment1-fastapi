@@ -88,3 +88,34 @@ def ddim_sample(model,alpha_bar,num_samples=16,steps=50,seed=42):
             noise=(x-a.sqrt()*clean)/(1-a).sqrt()
             x=next_a.sqrt()*clean+(1-next_a).sqrt()*noise
     return x.clamp(-1,1)
+
+
+@torch.inference_mode()
+def diffusion_sample(model,alpha_bar,num_samples=16,steps=50,seed=42):
+    """Ancestral DDPM posterior sampling on a respaced cumulative-alpha schedule.
+
+    For a jump from t to s<t, use effective beta=1-alpha_bar[t]/alpha_bar[s].
+    The final jump to clean space uses alpha_bar[s]=1 and zero posterior noise.
+    """
+    if not 2<=steps<=len(alpha_bar):
+        raise ValueError("steps must be between 2 and schedule length")
+    device=next(model.parameters()).device
+    rng=torch.Generator(device=device).manual_seed(seed)
+    x=torch.randn((num_samples,3,32,32),generator=rng,device=device)
+    indices=torch.linspace(len(alpha_bar)-1,0,steps).round().long().tolist()
+    for k,index in enumerate(indices):
+        at=alpha_bar[index]
+        ts=torch.full((num_samples,),index,device=device,dtype=torch.long)
+        eps=model(x,ts)
+        clean=((x-(1-at).sqrt()*eps)/at.sqrt()).clamp(-1,1)
+        if k==len(indices)-1:
+            x=clean
+        else:
+            a_previous=alpha_bar[indices[k+1]]
+            effective_beta=1-at/a_previous
+            c_clean=a_previous.sqrt()*effective_beta/(1-at)
+            c_noisy=(at/a_previous).sqrt()*(1-a_previous)/(1-at)
+            variance=effective_beta*(1-a_previous)/(1-at)
+            noise=torch.randn(x.shape,generator=rng,device=device)
+            x=c_clean*clean+c_noisy*x+variance.clamp_min(0).sqrt()*noise
+    return x.clamp(-1,1)

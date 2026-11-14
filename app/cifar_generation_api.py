@@ -5,7 +5,7 @@ import torch
 from fastapi import APIRouter, HTTPException, Request, Response
 from pydantic import BaseModel, Field
 from helper_lib.energy import EnergyModel, langevin_sample
-from helper_lib.diffusion import NoiseUNet, ddim_sample
+from helper_lib.diffusion import NoiseUNet, diffusion_sample
 from helper_lib.generator import samples_to_png
 
 router=APIRouter(tags=['CIFAR-10 generation'])
@@ -14,7 +14,7 @@ _generation_slot=threading.BoundedSemaphore(1)
 class EnergyRequest(BaseModel):
     num_samples:int=Field(4,ge=1,le=16,strict=True)
     seed:int=Field(42,ge=0,le=2147483647,strict=True)
-    steps:int=Field(100,ge=1,le=200,strict=True)
+    steps:int=Field(500,ge=1,le=1000,strict=True)
 
 class DiffusionRequest(BaseModel):
     num_samples:int=Field(4,ge=1,le=16,strict=True)
@@ -40,14 +40,14 @@ def generate_cifar(bundle,kind,num_samples=4,seed=42,steps=50):
         return langevin_sample(bundle['model'],initial,steps=steps,rng=rng,
                                step_size=bundle['config']['step_size'],
                                noise_std=bundle['config']['noise_std'])
-    return ddim_sample(bundle['model'],bundle['alpha_bar'],num_samples,steps,seed)
+    return diffusion_sample(bundle['model'],bundle['alpha_bar'],num_samples,steps,seed)
 
 
 def info(request,kind):
     bundle=getattr(request.app.state,kind)
     return {'kind':kind,'ready':bundle is not None,'dataset':'CIFAR-10',
             'image_shape':[3,32,32], 'trained_epochs':bundle['epoch'] if bundle else 0,
-            'conditional':False,'sampler':'Langevin' if kind=='ebm' else 'DDIM eta=0'}
+            'conditional':False,'sampler':'Langevin' if kind=='ebm' else 'DDPM ancestral (respaced)'}
 
 @router.get('/ebm/info')
 def ebm_info(request:Request):return info(request,'ebm')

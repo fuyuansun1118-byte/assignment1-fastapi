@@ -32,7 +32,7 @@ curl --fail http://127.0.0.1:8000/ebm/info
 curl --fail http://127.0.0.1:8000/diffusion/info
 curl --fail -X POST http://127.0.0.1:8000/ebm/generate \
   -H 'Content-Type: application/json' \
-  -d '{"num_samples":4,"seed":42,"steps":100}' --output ebm.png
+  -d '{"num_samples":4,"seed":42,"steps":500}' --output ebm.png
 curl --fail -X POST http://127.0.0.1:8000/diffusion/generate \
   -H 'Content-Type: application/json' \
   -d '{"num_samples":4,"seed":42,"steps":50}' --output diffusion.png
@@ -41,7 +41,7 @@ python3 verify_cifar_http.py --runtime docker --output Assignment4_Docker_Verifi
 
 The response is an `image/png` grid. Each constituent image is 32×32; two-pixel
 padding surrounds the tiles. `num_samples` is an integer 1–16, and `seed` is an
-integer 0–2147483647. EBM supports 1–200 steps (default 100), and diffusion
+integer 0–2147483647. EBM supports 1–1000 steps (default 500), and diffusion
 supports 2–200 steps (default 50). Missing weights return 503, invalid inputs 422,
 and an overlapping generation request 429. One new image-generation request
 runs at a time per process to bound CPU demand.
@@ -60,8 +60,8 @@ Python 3.12:
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements-dev.txt
-python train_cifar.py ebm --epochs 5 --data-dir data
-python train_cifar.py diffusion --epochs 8 --data-dir data
+python train_cifar.py ebm --epochs 3 --data-dir data
+python train_cifar.py diffusion --epochs 5 --data-dir data
 python -m pytest -q
 uvicorn app.main:app --port 8000
 ```
@@ -107,13 +107,15 @@ forms `x_t = sqrt(alpha_bar_t)*x0 + sqrt(1-alpha_bar_t)*epsilon`.
 The target is sampled standard-normal epsilon, with mean squared error loss.
 Adam uses learning rate 0.0002; model-gradient norm clipping is 1.0. A
 parameter EMA (decay 0.995) is saved for inference. GroupNorm has no running
-mean/variance buffers to update. The sampler is deterministic **DDIM with
-eta=0**, normally using 50 evenly spaced indices from the trained 200-step
-schedule. Predicted x0 is clipped to [-1,1], and noise is recomputed after
-clipping for a consistent next-step update.
+mean/variance buffers to update. The sampler is seeded **ancestral DDPM on a respaced schedule**, normally using 50 evenly spaced indices from the trained 200-step
+schedule. Predicted x0 is clipped to [-1,1]. Each reverse transition uses the Gaussian
+posterior with effective beta = 1 - alpha_bar_t/alpha_bar_s and adds seeded
+posterior noise; the final clean transition adds no noise. A deterministic DDIM
+helper is also retained for comparison, but the API and notebook use ancestral
+DDPM because its early-checkpoint previews had less residual noise.
 
 This retains the course principles of time-conditioned noise prediction and
-reverse diffusion. It uses an explicit discrete cosine schedule and DDIM
+reverse diffusion. It uses an explicit discrete cosine schedule and ancestral DDPM
 parameterization rather than copying the course continuous-noise-variance
 implementation verbatim. The assignment does not prescribe a fixed model
 architecture. This design is documented so the time-embedding convention and
@@ -181,3 +183,14 @@ instructor can obtain Docker/API code and weights.
 - Cosine schedule / Improved DDPM: https://arxiv.org/abs/2102.09672
 - PyTorch tensor: https://docs.pytorch.org/docs/2.15/generated/torch.tensor.html
 - PyTorch detach: https://docs.pytorch.org/docs/2.15/generated/torch.Tensor.detach.html
+
+## Delivered reference runs
+
+The supplied EBM completed **3 full epochs** (150,000 training-image
+presentations), and diffusion completed **5 full epochs** (250,000 presentations).
+These are compact CPU reference runs, not pretrained production generators.
+Each run uses all 50,000 training images per epoch. The actual losses and
+fixed-seed generated outputs are included without claiming high semantic quality.
+The supplied notebook displays freshly generated images from these exact
+checksum-verified checkpoints. Local and Linux Docker results are stored in
+`Assignment4_Verification.json` and `Assignment4_Docker_Verification.json`.

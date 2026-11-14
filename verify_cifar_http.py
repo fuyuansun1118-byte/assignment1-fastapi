@@ -28,7 +28,7 @@ for attempt in range(90):
 
 out=Path(a.output);out.parent.mkdir(parents=True,exist_ok=True)
 result={'runtime':a.runtime,'health':health,'models':{}}
-for kind,steps in [('ebm',100),('diffusion',50)]:
+for kind,steps in [('ebm',500),('diffusion',50)]:
     body=json.dumps({'num_samples':4,'steps':steps,'seed':42}).encode()
     request=urllib.request.Request(a.url+f'/{kind}/generate',data=body,
                                   headers={'Content-Type':'application/json'})

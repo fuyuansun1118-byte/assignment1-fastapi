@@ -1,0 +1,56 @@
+{
+  "runtime": "local",
+  "health": {
+    "status": "ok",
+    "model": "en_core_web_lg",
+    "classifier_ready": true,
+    "gan_ready": true,
+    "ebm_ready": true,
+    "diffusion_ready": true
+  },
+  "models": {
+    "ebm": {
+      "kind": "ebm",
+      "ready": true,
+      "dataset": "CIFAR-10",
+      "image_shape": [
+        3,
+        32,
+        32
+      ],
+      "trained_epochs": 3,
+      "conditional": false,
+      "sampler": "Langevin",
+      "png_size": [
+        70,
+        70
+      ],
+      "steps": 500,
+      "png_sha256": "33c05ac70e4a53a5015be857d7e5740f820f0a17e887202fa1ee571833a00132",
+      "same_seed_reproducible": true,
+      "seconds": 0.587
+    },
+    "diffusion": {
+      "kind": "diffusion",
+      "ready": true,
+      "dataset": "CIFAR-10",
+      "image_shape": [
+        3,
+        32,
+        32
+      ],
+      "trained_epochs": 5,
+      "conditional": false,
+      "sampler": "DDPM ancestral (respaced)",
+      "png_size": [
+        70,
+        70
+      ],
+      "steps": 50,
+      "png_sha256": "162250cc5c0060de5ece3518b7e7c822b81fce511f21a975cc27054003546222",
+      "same_seed_reproducible": true,
+      "seconds": 0.448
+    }
+  },
+  "invalid_request_status": 422
+}

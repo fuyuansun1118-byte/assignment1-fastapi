@@ -1,0 +1,32 @@
+[
+  {
+    "epoch": 1,
+    "images": 50000,
+    "noise_mse": 0.314554611825943,
+    "seconds": 367.41
+  },
+  {
+    "epoch": 2,
+    "images": 50000,
+    "noise_mse": 0.13530903924703597,
+    "seconds": 365.31
+  },
+  {
+    "epoch": 3,
+    "images": 50000,
+    "noise_mse": 0.1109773373055458,
+    "seconds": 397.94
+  },
+  {
+    "epoch": 4,
+    "images": 50000,
+    "noise_mse": 0.10000172575473786,
+    "seconds": 424.04
+  },
+  {
+    "epoch": 5,
+    "images": 50000,
+    "noise_mse": 0.09293843156576156,
+    "seconds": 425.64
+  }
+]

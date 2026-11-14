@@ -1,4 +1,4 @@
-"""The exact GAN architecture specified in Assignment 3."""
+"""Assignment 3 GAN architecture and factories for the Assignment 4 models."""
 import torch
 from torch import nn
 

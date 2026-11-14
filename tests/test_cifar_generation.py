@@ -70,7 +70,7 @@ def test_checkpoint_api_seed_and_validation(tmp_path,kind):
         assert c.post(f'/{kind}/generate',json=body).content==r.content
         assert c.post(f'/{kind}/generate',json=body|{'seed':43}).content!=r.content
         assert c.get(f'/{kind}/info').json()['trained_epochs']==1
-        for wrong in [{'num_samples':0},{'num_samples':17},{'seed':True},{'steps':201}]:
+        for wrong in [{'num_samples':0},{'num_samples':17},{'seed':True},{'steps':1001 if kind=='ebm' else 201}]:
             assert c.post(f'/{kind}/generate',json=body|wrong).status_code==422
         if kind=='diffusion':assert c.post('/diffusion/generate',json=body|{'steps':11}).status_code==422
         setattr(app.state,kind,None)

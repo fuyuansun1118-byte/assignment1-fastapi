@@ -1,0 +1,28 @@
+{
+  "epoch": 5,
+  "config": {
+    "kind": "diffusion",
+    "dataset": "CIFAR-10",
+    "training_images": 50000,
+    "image_shape": [
+      3,
+      32,
+      32
+    ],
+    "batch_size": 128,
+    "seed": 42,
+    "device": "cpu",
+    "epochs": 5,
+    "learning_rate": 0.0002,
+    "timesteps": 200,
+    "base": 16,
+    "ema_decay": 0.995,
+    "schedule": "cosine",
+    "time_embedding": "interleaved sin/cos; max_period 10000",
+    "initial_epoch_target": 8,
+    "stopping_rule": "fixed completed-epoch CPU reference; no validation selection",
+    "inference_sampler": "DDPM ancestral (respaced)",
+    "inference_steps": 50
+  },
+  "sha256": "82ac69f630f1d51a4e2554588a14a6a5b312467be7f985bd6dcc9faba827d7da"
+}

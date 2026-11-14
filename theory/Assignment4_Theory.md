@@ -97,8 +97,9 @@ the predicted noise can be used to estimate the clean image:
          /\sqrt{\bar\alpha_t}.
 \]
 
-The DDIM sampler then combines this estimate and the predicted noise at the
-next lower noise level. Other diffusion parameterizations can predict x0 or
+The reverse sampler then uses this estimate to calculate the posterior mean
+at the next lower noise level and adds the appropriate Gaussian posterior
+noise (except at the final clean step). Other diffusion parameterizations can predict x0 or
 velocity v; the answer above concerns this assignment's noise-prediction setup.
 
 ## Question 6 — Basic gradient calculations

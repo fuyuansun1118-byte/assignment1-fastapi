@@ -6,7 +6,7 @@ from pathlib import Path
 import torch
 from torch.nn import functional as F
 from .energy import EnergyModel, langevin_sample
-from .diffusion import NoiseUNet, cosine_schedule, forward_noise, ddim_sample
+from .diffusion import NoiseUNet, cosine_schedule, forward_noise, diffusion_sample
 from .cifar_data import load_cifar_tensor, image_batches
 from .generator import samples_to_png
 
@@ -42,7 +42,7 @@ def train_cifar(kind, data_dir="data", output_dir="models", epochs=5,
     if resume:
         state=torch.load(resume,map_location="cpu",weights_only=True)
         old=state['config']
-        for key in ['kind','batch_size','seed','base','timesteps','langevin_steps']:
+        for key in ['kind','batch_size','seed','base','timesteps','langevin_steps','learning_rate']:
             if key in old and config.get(key)!=old[key]:
                 raise ValueError(f"Resume setting mismatch: {key}")
         model.load_state_dict(state['model']);optimizer.load_state_dict(state['optimizer'])
@@ -108,7 +108,7 @@ def train_cifar(kind, data_dir="data", output_dir="models", epochs=5,
             samples=langevin_sample(model,torch.rand((16,3,32,32),generator=preview_rng)*2-1,
                                     steps=100,rng=preview_rng)
         else:
-            samples=ddim_sample(ema,alpha_bar,num_samples=16,steps=min(50,timesteps),seed=seed)
+            samples=diffusion_sample(ema,alpha_bar,num_samples=16,steps=min(50,timesteps),seed=seed)
         (previews/f'epoch_{epoch+1:03d}.png').write_bytes(samples_to_png(samples))
         print(json.dumps({'kind':kind,**row}),flush=True)
     return model

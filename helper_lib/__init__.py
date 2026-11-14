@@ -1,1 +1,1 @@
-"""Reusable GAN components for Assignment 3."""
+"""Reusable GAN, CIFAR-10 energy and diffusion components."""

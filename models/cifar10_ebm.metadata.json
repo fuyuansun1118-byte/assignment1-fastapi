@@ -1,0 +1,30 @@
+{
+  "epoch": 3,
+  "config": {
+    "kind": "ebm",
+    "dataset": "CIFAR-10",
+    "training_images": 50000,
+    "image_shape": [
+      3,
+      32,
+      32
+    ],
+    "batch_size": 128,
+    "seed": 42,
+    "device": "cpu",
+    "epochs": 3,
+    "learning_rate": 0.0001,
+    "langevin_steps": 20,
+    "step_size": 10.0,
+    "noise_std": 0.005,
+    "gradient_clip": 0.03,
+    "energy_regularization": 0.1,
+    "replay_size": 4096,
+    "refresh_probability": 0.05,
+    "initial_epoch_target": 5,
+    "stopping_rule": "fixed completed-epoch CPU reference; no validation selection",
+    "inference_sampler": "Langevin",
+    "inference_steps": 500
+  },
+  "sha256": "96cc82a7cd19a4ca706dec7fe217801cce5092471d3a77b491017164f696774f"
+}
